@@ -35,6 +35,12 @@
 
       <!-- Addons to compliment tests -->
       <dependency>
+         <groupId>org.jboss.forge.furnace</groupId>
+         <artifactId>container-cdi</artifactId>
+         <classifier>forge-addon</classifier>
+         <version>2.0.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
          <groupId>org.jboss.forge.addon</groupId>
          <artifactId>addon-manager</artifactId>
          <classifier>forge-addon</classifier>
