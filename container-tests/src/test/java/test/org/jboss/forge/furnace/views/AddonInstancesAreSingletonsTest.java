@@ -5,7 +5,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package org.jboss.forge.furnace.views;
+package test.org.jboss.forge.furnace.views;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;

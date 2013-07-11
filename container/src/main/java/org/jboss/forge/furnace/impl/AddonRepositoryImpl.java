@@ -274,8 +274,7 @@ public final class AddonRepositoryImpl implements MutableAddonRepository
          @Override
          public File call() throws Exception
          {
-
-            File addonDir = new File(getRootDirectory(), found.toCoordinates().replaceAll("[^a-zA-Z0-9]+", "-"));
+            File addonDir = new File(getRootDirectory(), OperatingSystemUtils.getSafeFilename(found.toCoordinates()));
             return addonDir;
          }
       });

@@ -9,7 +9,7 @@ package org.jboss.forge.furnace.se;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.proxy.ClassLoaderAdapterCallback;
 
-public class ForgeFactory
+public class FurnaceFactory
 {
    public static Furnace getInstance()
    {
@@ -17,7 +17,7 @@ public class ForgeFactory
       {
          final BootstrapClassLoader loader = new BootstrapClassLoader("bootpath");
          Class<?> bootstrapType = loader.loadClass("org.jboss.forge.furnace.FurnaceImpl");
-         return (Furnace) ClassLoaderAdapterCallback.enhance(ForgeFactory.class.getClassLoader(), loader,
+         return (Furnace) ClassLoaderAdapterCallback.enhance(FurnaceFactory.class.getClassLoader(), loader,
                   bootstrapType.newInstance(), Furnace.class);
       }
       catch (Exception e)
@@ -31,7 +31,7 @@ public class ForgeFactory
       try
       {
          Class<?> bootstrapType = loader.loadClass("org.jboss.forge.furnace.FurnaceImpl");
-         return (Furnace) ClassLoaderAdapterCallback.enhance(ForgeFactory.class.getClassLoader(), loader,
+         return (Furnace) ClassLoaderAdapterCallback.enhance(FurnaceFactory.class.getClassLoader(), loader,
                   bootstrapType.newInstance(), Furnace.class);
       }
       catch (Exception e)

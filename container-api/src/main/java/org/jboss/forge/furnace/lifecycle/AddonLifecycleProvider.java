@@ -22,26 +22,31 @@ public interface AddonLifecycleProvider
    /**
     * Initialize the provider with artifacts required for {@link Addon} startup.
     */
-   void initialize(Furnace furnace, AddonRegistry registry, Addon self);
+   void initialize(Furnace furnace, AddonRegistry registry, Addon self) throws Exception;
 
    /**
     * Start the given {@link Addon}.
     */
-   void start(Addon addon);
+   void start(Addon addon) throws Exception;
 
    /**
     * Stop the given {@link Addon}.
     */
-   void stop(Addon addon);
+   void stop(Addon addon) throws Exception;
 
    /**
     * Get the service registry for the given {@link Addon}.
     */
-   ServiceRegistry getServiceRegistry(Addon addon);
+   ServiceRegistry getServiceRegistry(Addon addon) throws Exception;
 
    /**
     * Handle any post-startup tasks.
     */
-   void postStartup(Addon addon);
+   void postStartup(Addon addon) throws Exception;
+
+   /**
+    * Handle any pre-shutdown tasks.
+    */
+   void preShutdown(Addon addon) throws Exception;
 
 }

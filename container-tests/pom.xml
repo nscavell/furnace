@@ -22,6 +22,7 @@
          <artifactId>furnace-se</artifactId>
          <scope>test</scope>
       </dependency>
+
       <dependency>
          <groupId>org.jboss.forge.test</groupId>
          <artifactId>forge-test-harness</artifactId>
@@ -42,13 +43,6 @@
       </dependency>
       <dependency>
          <groupId>org.jboss.forge.addon</groupId>
-         <artifactId>addon-manager</artifactId>
-         <classifier>forge-addon</classifier>
-         <version>2.0.0-SNAPSHOT</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.forge.addon</groupId>
          <artifactId>example</artifactId>
          <classifier>forge-addon</classifier>
          <version>2.0.0-SNAPSHOT</version>
@@ -64,6 +58,13 @@
       <dependency>
          <groupId>org.jboss.forge.addon</groupId>
          <artifactId>resources</artifactId>
+         <classifier>forge-addon</classifier>
+         <version>2.0.0-SNAPSHOT</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.forge.addon</groupId>
+         <artifactId>addon-manager</artifactId>
          <classifier>forge-addon</classifier>
          <version>2.0.0-SNAPSHOT</version>
          <scope>test</scope>

@@ -7,7 +7,7 @@
 package org.jboss.forge.furnace.addons;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
@@ -23,7 +23,6 @@ import org.jboss.forge.furnace.repositories.AddonRepository;
 import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.ClassLoaders;
 import org.jboss.forge.furnace.util.Iterators;
-import org.jboss.forge.proxy.ClassLoaderAdapterCallback;
 
 /**
  * Loads an {@link Addon}
@@ -66,7 +65,7 @@ public final class AddonRunnable implements Runnable
          lifecycleProvider = detectLifecycleProvider();
          if (lifecycleProvider != null)
          {
-            ClassLoaders.executeIn(lifecycleProvider.getKey().getClassLoader(), new Callable<Void>()
+            ClassLoaders.executeIn(addon.getClassLoader(), new Callable<Void>()
             {
                @Override
                public Void call() throws Exception
@@ -125,12 +124,20 @@ public final class AddonRunnable implements Runnable
 
          if (lifecycleProvider != null)
          {
-            ClassLoaders.executeIn(lifecycleProvider.getKey().getClassLoader(), new Callable<Void>()
+            ClassLoaders.executeIn(addon.getClassLoader(), new Callable<Void>()
             {
                @Override
                public Void call() throws Exception
                {
                   AddonLifecycleProvider provider = lifecycleProvider.getValue();
+                  try
+                  {
+                     provider.postStartup(addon);
+                  }
+                  catch (Throwable e)
+                  {
+                     logger.log(Level.SEVERE, "Failed to execute pre-shutdown task for [" + addon + "]", e);
+                  }
                   provider.stop(addon);
                   return null;
                }
@@ -153,32 +160,47 @@ public final class AddonRunnable implements Runnable
 
    private Entry<Addon, AddonLifecycleProvider> detectLifecycleProvider()
    {
-      Map<Addon, AddonLifecycleProvider> lifecycleProviderMap = new HashMap<Addon, AddonLifecycleProvider>();
+      final Map<Addon, AddonLifecycleProvider> lifecycleProviderMap = new HashMap<Addon, AddonLifecycleProvider>();
       for (AddonDependency d : addon.getDependencies())
       {
-         Addon dependency = d.getDependency();
+         final Addon dependency = d.getDependency();
          if (dependency.getStatus().isLoaded())
          {
-            ClassLoader classLoader = dependency.getClassLoader();
-            ServiceLoader<?> serviceLoader = ServiceLoader.load(
-                     ClassLoaders.loadClass(classLoader, AddonLifecycleProvider.class), classLoader);
-
-            List<?> providers = Iterators.asList(serviceLoader);
-
-            if (!providers.isEmpty())
+            final ClassLoader classLoader = dependency.getClassLoader();
+            try
             {
-               if (providers.size() == 1)
+               ClassLoaders.executeIn(classLoader, new Callable<Void>()
                {
-                  AddonLifecycleProvider provider = ClassLoaderAdapterCallback.enhance(getClass().getClassLoader(),
-                           classLoader, providers.get(0), AddonLifecycleProvider.class);
-                  lifecycleProviderMap.put(dependency, provider);
-               }
-               else
-               {
-                  throw new ContainerException("Expected only one [" + AddonLifecycleProvider.class.getName()
-                           + "] but found [" + providers.size() + "]. Redundant container implementations must be "
-                           + "removed before this addon can be started.");
-               }
+                  @Override
+                  public Void call() throws Exception
+                  {
+                     ServiceLoader<AddonLifecycleProvider> serviceLoader = ServiceLoader.load(
+                              AddonLifecycleProvider.class, classLoader);
+
+                     Iterator<AddonLifecycleProvider> iterator = serviceLoader.iterator();
+                     if (serviceLoader != null && iterator.hasNext())
+                     {
+                        AddonLifecycleProvider provider = iterator.next();
+                        if (ClassLoaders.ownsClass(classLoader, provider.getClass()))
+                        {
+                           lifecycleProviderMap.put(dependency, (AddonLifecycleProvider) provider);
+                        }
+
+                        if (iterator.hasNext())
+                        {
+                           throw new ContainerException("Expected only one [" + AddonLifecycleProvider.class.getName()
+                                    + "] but found multiple. Remove all but one redundant container implementations: " +
+                                    Iterators.asList(serviceLoader));
+                        }
+                     }
+                     return null;
+                  }
+               });
+            }
+            catch (Throwable e)
+            {
+               // FIXME Figure out why ServiceLoader is trying to load things from the wrong ClassLoader
+               logger.log(Level.FINEST, "ServiceLoader misbehaved when loading AddonLifecycleProvider instances.", e);
             }
          }
       }
